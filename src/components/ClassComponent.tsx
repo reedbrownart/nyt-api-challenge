@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import FunctionalComponent from './FunctionalComponent';
 
+//This creates a series of stateful variables used to perform fetches and store articles
 interface IState {
     searchTerm: string;
     startDate: string;
@@ -12,30 +13,16 @@ interface IState {
     fetchReturn: FetchData[];
 }
 
+//This interface allows the data to be stored, though I'm not sure why!
 interface FetchData {
-    // abstract: string;
-    // //byline: object;
-    // document_type: string;
-    // //headline: object;
-    // //keywords: object[];
-    // lead_paragraph: string;
-    // //multimedia: object[];
-    // news_desk: string;
-    // print_page: string;
-    // print_section: string;
-    // pub_date: string;
-    // section_name: string;
-    // snipped: string;
-    // source: string;
-    // type_of_material: string;
-    // uri: string;
-    // web_url: string;
-    // word_count: number;
-    // _id: string;
+
 }
 
+//This class component is where most of the logic happens for user interaction and fetching
 class ClassComponent extends Component<{}, IState> {
 
+    //first we set most of our variables to empty except for the URL and page numbers
+    //In retrospect I don't know if there is a valid reason for the baseurl and api key to be stateful
     constructor(props) {
         super(props)
         this.state = {
@@ -50,6 +37,7 @@ class ClassComponent extends Component<{}, IState> {
         }
     }
 
+    //This function creates a fetch URL based on the user's search and whether or not they added dates
     createURL = () => {
         this.setState({
             fetchURL: `${this.state.baseURL}?api-key=${this.state.apiKey}&page=${this.state.pageNumber}&q=${this.state.searchTerm}`
@@ -68,9 +56,12 @@ class ClassComponent extends Component<{}, IState> {
         }
     }
 
+    //This async function awaits the creation of a fetchURL above ^^^^
+    //and then performs a fetch of ten articles
     fetchResults = async (e) => {
         e.preventDefault();
         console.log('you have clicked submit and we are fetching the results')
+        console.log('your page number is ', this.state.pageNumber);
         // console.log(this.state.searchTerm);
         // console.log(this.state.startDate);
         // console.log(this.state.endDate);
@@ -79,13 +70,14 @@ class ClassComponent extends Component<{}, IState> {
 
         fetch(this.state.fetchURL)
             .then((res) => res.json())
-            .then((json) => this.displayResults(json))
+            .then((json) => this.storeArticles(json))
             .catch((err) => console.log(err))
 
     }
 
-    displayResults = (json) => {
-
+    //This function stores the articles from the fetch
+    //I understand this didn't need to be a separate function, but it makes it more readable IMO
+    storeArticles = (json) => {
         this.setState(
             {
                 fetchReturn: json.response.docs
@@ -93,6 +85,30 @@ class ClassComponent extends Component<{}, IState> {
         )
     }
 
+    changePage = async (e, direction) => {
+        console.log('changePage started');
+        e.preventDefault();
+        if (direction === 'up') {
+            this.setState(
+                {
+                    pageNumber: this.state.pageNumber + 1
+                }
+            )
+        }
+
+        if (direction === 'down') {
+            this.setState(
+                {
+                    pageNumber: this.state.pageNumber - 1
+                }
+            )
+        }
+
+        this.fetchResults(e);
+    }
+
+    //Here we render our general structure which includes the search boxes and
+    //a functional component which is fed the results from the fetch as a prop
     render() {
         return (
             <div>
@@ -134,7 +150,23 @@ class ClassComponent extends Component<{}, IState> {
                             </p>
                         </form>
                     </div>
-                    <FunctionalComponent fetchReturn = {this.state.fetchReturn}/>
+                    <div className="results">
+                        <nav>
+                            <button 
+                                onClick = {(e) => {
+                                    console.log('previous button pressed');
+                                    this.changePage(e, 'down');
+                                }}
+                                className="prev">Previous 10</button>
+                            <button
+                                onClick = {(e) => {
+                                    console.log('next button pressed');
+                                    this.changePage(e, 'up');
+                                }}
+                                className="next">Next 10</button>
+                        </nav>
+                        <FunctionalComponent fetchReturn={this.state.fetchReturn} changePage={this.changePage} />
+                    </div>
                 </div>
             </div>
         )
