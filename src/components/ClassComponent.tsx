@@ -58,8 +58,7 @@ class ClassComponent extends Component<{}, IState> {
 
     //This async function awaits the creation of a fetchURL above ^^^^
     //and then performs a fetch of ten articles
-    fetchResults = async (e) => {
-        e.preventDefault();
+    fetchResults = async () => {
         console.log('you have clicked submit and we are fetching the results')
         console.log('your page number is ', this.state.pageNumber);
         // console.log(this.state.searchTerm);
@@ -85,26 +84,25 @@ class ClassComponent extends Component<{}, IState> {
         )
     }
 
-    changePage = async (e, direction) => {
+    changePage = (direction) => {
         console.log('changePage started');
-        e.preventDefault();
         if (direction === 'up') {
             this.setState(
                 {
                     pageNumber: this.state.pageNumber + 1
-                }
+                }, this.fetchResults
             )
         }
 
         if (direction === 'down') {
-            this.setState(
-                {
-                    pageNumber: this.state.pageNumber - 1
-                }
-            )
+            if (this.state.pageNumber > 0) {
+                this.setState(
+                    {
+                        pageNumber: this.state.pageNumber - 1
+                    }, this.fetchResults
+                )
+            }
         }
-
-        this.fetchResults(e);
     }
 
     //Here we render our general structure which includes the search boxes and
@@ -116,7 +114,7 @@ class ClassComponent extends Component<{}, IState> {
 
                 <div className="wrapper">
                     <div className="controls">
-                        <form onSubmit={this.fetchResults}>
+                        <form>
                             <p>
                                 <label htmlFor="search">Enter a SINGLE search term (required): </label>
                                 <input
@@ -145,27 +143,27 @@ class ClassComponent extends Component<{}, IState> {
                                     onChange={(e) => { this.setState({ endDate: e.target.value }) }}
                                 />
                             </p>
-                            <p>
-                                <button className="submit" type="submit">Submit search</button>
-                            </p>
                         </form>
+                        <p>
+                            <button onClick = {(e) => {this.fetchResults()}} className="submit">Submit search</button>
+                        </p>
                     </div>
                     <div className="results">
                         <nav>
-                            <button 
-                                onClick = {(e) => {
+                            <button
+                                onClick={(e) => {
                                     console.log('previous button pressed');
-                                    this.changePage(e, 'down');
+                                    this.changePage('down');
                                 }}
                                 className="prev">Previous 10</button>
                             <button
-                                onClick = {(e) => {
+                                onClick={(e) => {
                                     console.log('next button pressed');
-                                    this.changePage(e, 'up');
+                                    this.changePage('up');
                                 }}
                                 className="next">Next 10</button>
                         </nav>
-                        <FunctionalComponent fetchReturn={this.state.fetchReturn} changePage={this.changePage} />
+                        <FunctionalComponent fetchReturn={this.state.fetchReturn} />
                     </div>
                 </div>
             </div>

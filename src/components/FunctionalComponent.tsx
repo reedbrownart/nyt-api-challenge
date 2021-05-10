@@ -7,7 +7,7 @@ const FunctionalComponent = (props) => {
         const { fetchReturn } = props;
 
         if (fetchReturn.length === 0) {
-            return <p>no results here</p>
+            return <></>
         } else {
             return fetchReturn.map(article => {
                 return(
